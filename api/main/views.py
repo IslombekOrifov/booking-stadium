@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from .serializers import StadiumSerializer, StadiumListSerializer
 
-from apps.main.models import Stadium
+from main.models import Stadium
 
 
 class StadiumListAPIView(ListAPIView):

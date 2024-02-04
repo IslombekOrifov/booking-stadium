@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from .serializers import CustomUserSerializer
 
-from apps.account.models import CustomUser
+from account.models import CustomUser
 
         
 class UserDetailAPIView(APIView):

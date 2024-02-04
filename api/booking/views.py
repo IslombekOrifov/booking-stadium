@@ -2,7 +2,7 @@ from rest_framework.generics import ListAPIView
 
 from .serializers import BookingSerializer
 
-from apps.booking.models import Booking
+from booking.models import Booking
 
 
 class BookingListAPIView(ListAPIView):

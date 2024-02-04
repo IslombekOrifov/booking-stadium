@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.main.models import Stadium, StadiumImage
+from main.models import Stadium, StadiumImage
 
 
 class StadiumImageSerializer(serializers.ModelSerializer):
