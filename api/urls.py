@@ -2,6 +2,6 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('main/', include('main.urls', namespace='main')),
-    path('booking/', include('booking.urls', namespace='booking')),
+    path('main/', include('api.main.urls')),
+    path('booking/', include('api.booking.urls')),
 ]
