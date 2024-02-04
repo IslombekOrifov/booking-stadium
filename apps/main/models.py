@@ -36,7 +36,7 @@ class StadiumImage(models.Model):
 class Rating(models.Model):
     score = models.PositiveIntegerField()
     user = models.ForeignKey(CustomUser, related_name='rated_stadiums', 
-                             on_delete=models.SET_NULL, blank=True, mull=True)
+                             on_delete=models.SET_NULL, blank=True, null=True)
     
     def __str__(self) -> str:
         return str(self.score)

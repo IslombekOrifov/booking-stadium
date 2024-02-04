@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 
-from decouple import env_conf
+from decouple import config as env_conf
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     
     'main.apps.MainConfig',
-    'order.apps.OrderConfig',
+    'booking.apps.BookingConfig',
 ]
 
 MIDDLEWARE = [
