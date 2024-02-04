@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Stadium, StadiumImage, Rating
+
+
+admin.site.register(Stadium)
+admin.site.register(StadiumImage)
+admin.site.register(Rating)
