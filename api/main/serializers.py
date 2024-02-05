@@ -24,3 +24,12 @@ class StadiumListSerializer(serializers.ModelSerializer):
         model = Stadium
         fields = ['name', 'logo', 'address', 'start_working_time', 
                   'end_working_time', 'lat', 'long']
+        
+
+class StadiumCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stadium
+        fields = ['name', 'logo', 'address', 'description', 
+                  'contact1', 'contact2', 'price', 
+                  'start_working_time', 'end_working_time', 
+                  'lat', 'long']
