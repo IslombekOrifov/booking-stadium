@@ -22,7 +22,7 @@ class StadiumSerializer(serializers.ModelSerializer):
 class StadiumListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stadium
-        fields = ['name', 'logo', 'address', 'start_working_time', 
+        fields = ['id', 'name', 'logo', 'address', 'start_working_time', 
                   'end_working_time', 'lat', 'long']
         
 
