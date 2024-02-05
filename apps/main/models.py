@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import Point
 
 from .validators import phone_number_validator
 from .services import upload_logo_path, upload_stadium_image
@@ -6,7 +8,7 @@ from .services import upload_logo_path, upload_stadium_image
 from account.models import CustomUser
 
 
-class Stadium(models.Model):
+class Stadium(gis_models.Model):
     user = models.ForeignKey(CustomUser, related_name='stadiums', on_delete=models.PROTECT)
     name = models.CharField(max_length=50, db_index=True)
     logo = models.ImageField(upload_to=upload_logo_path, blank=True, null=True)
@@ -17,12 +19,18 @@ class Stadium(models.Model):
     price = models.PositiveIntegerField()
     start_working_time = models.TimeField()
     end_working_time = models.TimeField()
-    lat = models.DecimalField(max_digits=22, decimal_places=18)
-    long = models.DecimalField(max_digits=22, decimal_places=18)
+    lat = models.FloatField()
+    long = models.FloatField()
+    location = gis_models.PointField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     
     def __str__(self) -> str:
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if self.lat is not None and self.long is not None:
+            self.location = Point(self.long, self.lat)
+        super().save(*args, **kwargs)
     
 
 class StadiumImage(models.Model):
@@ -35,6 +43,8 @@ class StadiumImage(models.Model):
 
 class Rating(models.Model):
     score = models.PositiveIntegerField()
+    stadium = models.ForeignKey(Stadium, related_name='ratings', 
+                             on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, related_name='rated_stadiums', 
                              on_delete=models.SET_NULL, blank=True, null=True)
     
