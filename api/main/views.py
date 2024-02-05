@@ -24,7 +24,7 @@ from .serializers import (
     StadiumCreateSerializer, RatingSerializer
 )
 
-from main.models import Stadium
+from main.models import Stadium, Rating
 from booking.models import Booking
 
 
@@ -110,13 +110,18 @@ class StadiumDetailAPIView(APIView):
         return Response(serializer.data)
 
 
-class RatingAddAPIView(APIView):
+class RatingCreateOrUpdateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, pk):
         stadium = get_object_or_404(Stadium, id=pk)
-        serializer = RatingSerializer(data=request.data)
+        try:
+            rating = Rating.objects.get(stadium=stadium, user=request.user)
+            serializer = RatingSerializer(instance=rating, data=request.data)
+        except Rating.DoesNotExist:
+            serializer = RatingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(stadium=stadium, user=request.user)
+        
         return Response(status=status.HTTP_201_CREATED)
         
