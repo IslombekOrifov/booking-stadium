@@ -33,18 +33,18 @@ class UserUpdateAPIView(APIView):
     
     
 class UserDetailAPIView(APIView):
-    
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, pk):
         user = get_object_or_404(CustomUser, id=pk)
         serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
 
-class UserChangePasswordView(UpdateAPIView):
+class UserChangePasswordView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserChangePasswordSerializer
 
-    def update(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
