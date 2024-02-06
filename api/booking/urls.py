@@ -1,10 +1,14 @@
 from django.urls import path
 
 from .views import (
-    BookingListAPIView, 
+    UserBookingListAPIView, BookingListAPIView,
+    BookingDestroyAPIView, BookingCreateAPIView
 )
 
 
 urlpatterns = [
-    path('list/', BookingListAPIView.as_view()),
+    path('user/list/', UserBookingListAPIView.as_view()),
+    path('admin/list/', BookingListAPIView.as_view()),
+    path('delete/', BookingDestroyAPIView.as_view()),
+    path('create/', BookingCreateAPIView.as_view()),
 ]
