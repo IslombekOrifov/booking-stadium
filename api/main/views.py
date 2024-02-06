@@ -16,30 +16,15 @@ from rest_framework import status
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
     StadiumSerializer, StadiumListSerializer, StadiumImageSerializer,
     StadiumCreateSerializer, RatingSerializer
 )
 
+from common.pagination import CustomPagination
 from main.models import Stadium, Rating
 from booking.models import Booking
-
-
-class CustomPagination(PageNumberPagination):
-    page_size=2
-    page_size_query_param = 'page_size'
-    def get_paginated_response(self, data):
-        return Response({
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'count': self.page.paginator.count,
-            'total_pages': self.page.paginator.num_pages,
-            'showing_count': self.page_size,
-            'results': data
-        })
 
 
 class StadiumCreateAPIView(CreateAPIView):
