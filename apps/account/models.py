@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .services import upload_avatar_path
+from .enums import UserRole
 
 from main.validators import phone_number_validator
 
@@ -13,6 +14,8 @@ class CustomUser(AbstractUser):
                                     unique=True,
                                     db_index=True,
                                     validators=[phone_number_validator])
+    role = models.CharField(max_length=2, choices=UserRole.choices(), default=UserRole.u.name)
+    
     REQUIRED_FIELDS = []
         
     def __str__(self) -> str:

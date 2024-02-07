@@ -2,6 +2,7 @@ from django.contrib.auth import password_validation
 from rest_framework import serializers
 
 from account.models import CustomUser
+from account.enums import UserRole
 from main.validators import phone_number_validator
 
 
@@ -10,7 +11,7 @@ class RegisterSerializer(serializers.Serializer):
     
     class Meta:
         model = CustomUser
-        fields = ['username', 'password', 'phone']
+        fields = ['username', 'password', 'phone_number']
         
         
     def create(self, validated_data):
@@ -23,10 +24,17 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 
-                  'phone', 'photo']
+                  'phone_number', 'photo', 'role']
+        extra_kwargs = {
+            'role': {'read_only': True}
+        }
+        
+    def get_role(self, obj):
+        return UserRole(obj.role).value
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -54,3 +62,10 @@ class UserChangePasswordSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return user
+    
+
+class CustomUserBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'phone_number', 'photo']
+       

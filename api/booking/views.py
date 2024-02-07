@@ -1,30 +1,34 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListAPIView, DestroyAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .serializers import BookingSerializer
+from drf_yasg.utils import swagger_auto_schema
 
-from common.pagination import CustomPagination
+from .serializers import (
+    BookingCreateSerializer, UserBookedSerializer,
+    OwnerBookingSerializer
+)
+from api.common.pagination import CustomPagination
 from booking.models import Booking
 
 
 class UserBookingListAPIView(ListAPIView):
     queryset = Booking.objects.all()
-    serializer_class = BookingSerializer
+    serializer_class = UserBookedSerializer
     pagination_class = CustomPagination
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        queryset = Booking.objects.filter(user=self.request.user).order_by('-booking_end_time')
+        queryset = Booking.objects.filter(user=self.request.user).select_related('stadium').order_by('-booking_end_time')
         return queryset
     
     
 class BookingListAPIView(ListAPIView):
     queryset = Booking.objects.all()
-    serializer_class = BookingSerializer
+    serializer_class = OwnerBookingSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend,]
     filterset_fields = {
@@ -34,7 +38,7 @@ class BookingListAPIView(ListAPIView):
     }
     
     def get_queryset(self):
-        queryset = Booking.objects.filter(stadium__user=self.request.user).order_by('-booking_start_time')
+        queryset = Booking.objects.filter(stadium__user=self.request.user).select_related('stadium', 'user').order_by('-booking_start_time')
         return queryset
     
 
@@ -50,8 +54,9 @@ class BookingDestroyAPIView(APIView):
 class BookingCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(request_body=BookingCreateSerializer, responses={200: BookingCreateSerializer})
     def post(self, request):
-        serializer = BookingSerializer(data=request.data)
+        serializer = BookingCreateSerializer(data=request.data)
         if serializer.is_valid():
             stadium = serializer.validated_data['stadium']
             start_time = serializer.validated_data['booking_start_time']

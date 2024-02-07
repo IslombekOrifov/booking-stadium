@@ -42,3 +42,8 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['score']
+        
+class BookedStadiumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stadium
+        fields = ['id', 'name', 'logo']

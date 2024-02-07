@@ -34,10 +34,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'django.contrib.gis',
     
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     
     'main.apps.MainConfig',
@@ -147,20 +149,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication'
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    
-    # Input and output formats
-    'DATE_FORMAT': ISO_8601,
-    'DATE_INPUT_FORMATS': [ISO_8601],
-
-    'DATETIME_FORMAT': ISO_8601,
-    'DATETIME_INPUT_FORMATS': [ISO_8601],
-
-    'TIME_FORMAT': ISO_8601,
-    'TIME_INPUT_FORMATS': [ISO_8601],
-
 }
 
 

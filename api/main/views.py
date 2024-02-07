@@ -1,28 +1,28 @@
 from datetime import datetime
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.db import models
-from django.db.models import Avg, Q, F, Func
+from django.db.models import Avg, Q
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models import PointField
-from django.contrib.gis.db.models.functions import Cast
 
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView,
-    CreateAPIView,
+    ListAPIView, CreateAPIView,
 )
-from rest_framework import status
-from rest_framework import permissions
+from rest_framework import status, permissions
 from rest_framework.views import APIView
+from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+
+from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import (
     StadiumSerializer, StadiumListSerializer, StadiumImageSerializer,
     StadiumCreateSerializer, RatingSerializer
 )
 
-from common.pagination import CustomPagination
+from api.common.pagination import CustomPagination
+from account.enums import UserRole
 from main.models import Stadium, Rating
 from booking.models import Booking
 
@@ -33,6 +33,8 @@ class StadiumCreateAPIView(CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
+        if request.user.role != UserRole.so.value:
+            return Response({'status': "You can't create a stadium"}, status=status.HTTP_400_BAD_REQUEST)
         images = request.data.dict().pop('images', [])
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -46,8 +48,44 @@ class StadiumCreateAPIView(CreateAPIView):
             images_serializer = StadiumImageSerializer(data=images, many=True)
             images_serializer.is_valid(raise_exception=True)
             images_serializer.save(stadium=serializer.instance)
-    
+            
 
+class StadiumUpdateAPIView(UpdateAPIView):
+    queryset = Stadium.objects.all()
+    serializer_class = StadiumCreateSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def update(self, request, *args, **kwargs):
+        instance = get_object_or_404(Stadium, user=request.user, id=self.kwargs['pk'])
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+            
+class StadiumImageAddAPIView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def post(self, request, pk):
+        stadium = get_object_or_404(Stadium, user=request.user, id=pk)
+        images_serializer = StadiumImageSerializer(data=request.FILES)
+        images_serializer.is_valid(raise_exception=True)
+        images_serializer.save(stadium=stadium)
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class OwnerStadiumListAPIView(ListAPIView):
+    queryset = Stadium.objects.all()
+    serializer_class = StadiumListSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return Stadium.objects.filter(user=self.request.user)
+    
+    
 class StadiumListAPIView(ListAPIView):
     queryset = Stadium.objects.all()
     serializer_class = StadiumSerializer
@@ -79,11 +117,11 @@ class StadiumListAPIView(ListAPIView):
             queryset = queryset.annotate(
                 distance=Distance('location', user_location)
             ).exclude(id__in=booked_stadiums).order_by('distance')
-
         return queryset
         
         
 class StadiumDetailAPIView(APIView):
+    @swagger_auto_schema(responses={200: StadiumSerializer})
     def get(self, request, pk):
         try:
             stadium = Stadium.objects.filter(id=pk).prefetch_related('images').first().annotate(
@@ -98,6 +136,7 @@ class StadiumDetailAPIView(APIView):
 class RatingCreateOrUpdateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
+    @swagger_auto_schema(request_body=RatingSerializer)
     def post(self, request, pk):
         stadium = get_object_or_404(Stadium, id=pk)
         try:
@@ -109,4 +148,3 @@ class RatingCreateOrUpdateAPIView(APIView):
         serializer.save(stadium=stadium, user=request.user)
         
         return Response(status=status.HTTP_201_CREATED)
-        
